@@ -67,7 +67,7 @@
 	let outputText = $state('');
 	let selectedStyleId = $state(builtinStyles[0].id);
 	let direction = $state<'to' | 'from'>('to');
-	let modelPreference = $state<'balanced' | 'creative' | 'quality'>('balanced');
+	let modelPreference = $state<'balanced' | 'creative' | 'quality'>('quality');
 	let loading = $state(false);
 	let error = $state('');
 	let warning = $state('');

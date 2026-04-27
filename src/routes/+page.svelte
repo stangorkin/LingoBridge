@@ -72,6 +72,7 @@
 	let error = $state('');
 	let warning = $state('');
 	let copied = $state(false);
+	let copiedInput = $state(false);
 	let userCustomStyles = $state<UserCustomStyle[]>(loadCustomStyles());
 	let historyEntries = $state<HistoryEntry[]>(loadHistory());
 
@@ -245,6 +246,13 @@
 		setTimeout(() => (copied = false), 2000);
 	}
 
+	async function copyInput() {
+		if (!inputText) return;
+		await navigator.clipboard.writeText(inputText);
+		copiedInput = true;
+		setTimeout(() => (copiedInput = false), 2000);
+	}
+
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && canTranslate) {
 			translate();
@@ -412,6 +420,11 @@
 				<span class="char-count" class:over-limit={isOverLimit}>
 					{charCount}/{MAX_LENGTH}
 				</span>
+				{#if inputText}
+					<button class="copy-btn" onclick={copyInput}>
+						{copiedInput ? '✓ Copied!' : '📋 Copy'}
+					</button>
+				{/if}
 				<button class="translate-btn" onclick={translate} disabled={!canTranslate}>
 					{#if loading}
 						<span class="spinner"></span> Translating...

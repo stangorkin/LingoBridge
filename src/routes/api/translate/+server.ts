@@ -3,6 +3,17 @@ import type { RequestHandler } from './$types';
 import { getStyleById } from '$lib/styles';
 
 const MAX_INPUT_LENGTH = 2000;
+
+const CORS_HEADERS = {
+	'Access-Control-Allow-Origin': '*',
+	'Access-Control-Allow-Methods': 'POST, OPTIONS',
+	'Access-Control-Allow-Headers': 'Content-Type'
+};
+
+export const OPTIONS: RequestHandler = async () => {
+	return new Response(null, { status: 204, headers: CORS_HEADERS });
+};
+
 const MODELS = {
 	balanced: '@cf/meta/llama-3.1-8b-instruct',
 	creative: '@cf/mistralai/mistral-small-3.1-24b-instruct',
@@ -83,28 +94,28 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 	const { text, styleId, direction, modelPreference, customStyleDescription } = await request.json();
 
 	if (!text || typeof text !== 'string' || text.trim().length === 0) {
-		return json({ error: 'Text is required' }, { status: 400 });
+		return json({ error: 'Text is required' }, { status: 400, headers: CORS_HEADERS });
 	}
 
 	if (text.length > MAX_INPUT_LENGTH) {
-		return json({ error: `Text must be under ${MAX_INPUT_LENGTH} characters` }, { status: 400 });
+		return json({ error: `Text must be under ${MAX_INPUT_LENGTH} characters` }, { status: 400, headers: CORS_HEADERS });
 	}
 
 	const style = getStyleById(styleId);
 	if (!style) {
-		return json({ error: 'Invalid style' }, { status: 400 });
+		return json({ error: 'Invalid style' }, { status: 400, headers: CORS_HEADERS });
 	}
 
 	if (direction !== 'to' && direction !== 'from') {
-		return json({ error: 'Direction must be "to" or "from"' }, { status: 400 });
+		return json({ error: 'Direction must be "to" or "from"' }, { status: 400, headers: CORS_HEADERS });
 	}
 
 	if (styleId === 'custom') {
 		if (!customStyleDescription || typeof customStyleDescription !== 'string' || customStyleDescription.trim().length === 0) {
-			return json({ error: 'A style description is required for Custom mode.' }, { status: 400 });
+			return json({ error: 'A style description is required for Custom mode.' }, { status: 400, headers: CORS_HEADERS });
 		}
 		if (customStyleDescription.length > 200) {
-			return json({ error: 'Style description must be under 200 characters.' }, { status: 400 });
+			return json({ error: 'Style description must be under 200 characters.' }, { status: 400, headers: CORS_HEADERS });
 		}
 	}
 
@@ -129,7 +140,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 	if (!platform?.env?.AI) {
 		return json(
 			{ error: 'AI service not available. Deploy to Cloudflare to enable translations.' },
-			{ status: 503 }
+			{ status: 503, headers: CORS_HEADERS }
 		);
 	}
 
@@ -221,9 +232,9 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 			};
 		}
 
-		return json(payload);
+		return json(payload, { headers: CORS_HEADERS });
 	} catch (err) {
 		console.error('AI translation error:', err);
-		return json({ error: 'Translation failed. Please try again.' }, { status: 500 });
+		return json({ error: 'Translation failed. Please try again.' }, { status: 500, headers: CORS_HEADERS });
 	}
 };
